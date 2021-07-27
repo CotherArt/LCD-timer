@@ -8,8 +8,12 @@ const int relay = 10, pot = 0;
 int seviche_pin = 10;
 int seviche = 0;
 
+const int buttonPin = 9;
+int buttonState = 0;
+int flag = 0;
+
 int val = 0;
-String time;
+int time;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 // LCD dimentions
 const int xlen = 16, ylen = 2;
@@ -17,21 +21,27 @@ const int xlen = 16, ylen = 2;
 int incomingByte = 0; // for incoming serial data
 String incomingString = "";
 
-void timer_message(){
-    
-}
-
 void centerMsg(String msg, byte pos){
   int center = xlen / 2 - msg.length() / 2 - 1;
   lcd.setCursor(center,pos);
   lcd.print(msg);
 }
 
-void timeMode(){
+void selectTime(){
   centerMsg("---Tiempo---", 0);
   time = map(analogRead(pot), 0, 1023, 0, 60);
-  centerMsg(time, 1);
+  centerMsg((String)time, 1);
   delay(100);
+}
+
+void timerMode(int time){
+  do{
+    lcd.clear();
+    centerMsg("Cofee time wuuu!!",0);
+    centerMsg((String)time+"s",1);
+    delay(1000);
+    time--;
+  }while(time > -1);
 }
 
 void ini_msg(){
@@ -44,22 +54,42 @@ void setup() {
   lcd.begin(xlen, ylen);
   pinMode(relay, OUTPUT);
   pinMode(seviche_pin, INPUT_PULLUP);
+  pinMode(buttonPin, INPUT_PULLUP);
   Serial.begin(9600);
   
   ini_msg();
-  delay(2000);
+  delay(1000);
 }
 
 void loop() {
+  
+
+//  if (buttonState == LOW){
+//    if (flag == 0){
+//      Serial.println("ON");
+//      flag = 1;
+//    }else if(flag == 1){
+//      Serial.println("OFF");
+//      flag = 0;
+//    }
+//  }
+  
   lcd.clear();
   seviche = digitalRead(seviche_pin);
-  Serial.println(seviche);
+//  Serial.println(seviche);
   if(seviche == HIGH){
-    timeMode();
+    selectTime();
+    buttonState = digitalRead(buttonPin);
+    if(buttonState == LOW){
+      Serial.println("owo");
+      Serial.println("awa");
+      timerMode(time);
+    }
   }else{
     ini_msg();
   }
-
-  delay(100);
+  
+  
+  delay(200);
 //  digitalWrite(relay, HIGH);
 }
