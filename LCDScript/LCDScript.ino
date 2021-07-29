@@ -4,10 +4,10 @@
 // initialize the library by associating any needed LCD interface pin
 // with the arduino pin number it is connected to
 const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
-const int relay = 10, pot = 0;
+const int relay = 8, pot = 0;
 int seviche_pin = 10;
 int seviche = 0;
-
+boolean reset = false;
 const int buttonPin = 9;
 int buttonState = 0;
 int flag = 0;
@@ -29,12 +29,14 @@ void centerMsg(String msg, byte pos){
 
 void selectTime(){
   centerMsg("---Tiempo---", 0);
-  time = map(analogRead(pot), 0, 1023, 0, 60);
-  centerMsg((String)time, 1);
+  time = map(analogRead(pot), 0, 1023, 0, 300);
+  centerMsg((String)time+"s", 1);
   delay(100);
+  reset = true;
 }
 
 void timerMode(int time){
+  digitalWrite(relay, HIGH);
   do{
     lcd.clear();
     centerMsg("Cofee time wuuu!!",0);
@@ -42,6 +44,11 @@ void timerMode(int time){
     delay(1000);
     time--;
   }while(time > -1);
+  lcd.clear();
+  centerMsg("Listo K listo!",0);
+  digitalWrite(relay, LOW);
+  reset = false;
+  delay(2000);
 }
 
 void ini_msg(){
@@ -62,30 +69,19 @@ void setup() {
 }
 
 void loop() {
-  
 
-//  if (buttonState == LOW){
-//    if (flag == 0){
-//      Serial.println("ON");
-//      flag = 1;
-//    }else if(flag == 1){
-//      Serial.println("OFF");
-//      flag = 0;
-//    }
-//  }
-  
+
   lcd.clear();
   seviche = digitalRead(seviche_pin);
-//  Serial.println(seviche);
+  
   if(seviche == HIGH){
     selectTime();
     buttonState = digitalRead(buttonPin);
-    if(buttonState == LOW){
-      Serial.println("owo");
-      Serial.println("awa");
+  }else{
+    if(reset == true){
+      Serial.println("timer mode");
       timerMode(time);
     }
-  }else{
     ini_msg();
   }
   
